@@ -48,6 +48,7 @@ df <- tickfat_data |>
 ```
 ```{r boxplots}
 bplot <- df |>
+  filter(is.na(comment)) |>
   ggplot(
     aes(x=week, y = body_fat, group = week)
   ) +
@@ -60,14 +61,15 @@ bplot <- df |>
 bplot
 
 bplot2 <- df |>
+  filter(is.na(comment)) |>
     group_by(week) |>
   ggplot(
     aes(x=as.factor(week), y = pct_bf, fill = sex)
   ) +
   geom_boxplot() +
   labs(
-    title = "body fat (pct)",
-    x = "treatment", y = "body fat (pct)",
+    title = "Tick Body Fat",
+    x = "week", y = "body fat proportion",
   ) +
   facet_wrap(~tx)
 bplot2
