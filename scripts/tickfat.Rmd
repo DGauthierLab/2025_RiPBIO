@@ -43,8 +43,16 @@ View(tickfat_data)
 df <- tickfat_data |>
   mutate(
     body_fat = pre_wt-post_wt,
-    pct_bf = 1-(post_wt/pre_wt)
+    pct_bf = 1-(post_wt/pre_wt), 
+    new_tx = case_when(
+      tx %in% c("control", "colony") ~ "control", 
+      .default = as.character(tx)
+    ),
+    new_week = case_when(
+      week <= 1 ~ 1, 
+      .default = week)
     )
+  
 ```
 ```{r boxplots}
 bplot <- df |>
@@ -62,16 +70,23 @@ bplot
 
 bplot2 <- df |>
   filter(is.na(comment)) |>
-    group_by(week) |>
+    group_by(new_week) |>
   ggplot(
-    aes(x=as.factor(week), y = pct_bf, fill = sex)
+    aes(x=as.factor(new_week), y = pct_bf, fill = sex)
   ) +
   geom_boxplot() +
   labs(
     title = "Tick Body Fat",
     x = "week", y = "body fat proportion",
   ) +
-  facet_wrap(~tx)
+  facet_wrap(~new_tx)
 bplot2
 ```
+
+```{r stats}
+glm <- glm(body_fat ~ new_week + new_tx + sex, data = df, family = "gaussian")
+glm
+summary(glm)
+```
+
 
