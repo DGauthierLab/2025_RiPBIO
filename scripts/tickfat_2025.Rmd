@@ -35,58 +35,120 @@ library(ggokabeito)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 ```{r import}
-tickfat_data <- read_excel("../data/tickfat_data.xlsx", 
-    sheet = "Experiment_2")
-View(tickfat_data)
+df_raw <- suppressWarnings(
+  read_sheet(
+    "https://docs.google.com/spreadsheets/d/1px-Ldt1EfCNNAWOFSrFH69v8FHLSb1imCDa9wuUgJCc/edit?usp=sharing", 
+    sheet = "weigh_data"
+    )
+)
+
+df_raw <- as_tibble(df_raw)
 ```
 ```{r data calculations}
-df <- tickfat_data |>
+df <- df_raw |>
   mutate(
-    body_fat = pre_wt-post_wt,
-    pct_bf = 1-(post_wt/pre_wt), 
-    new_tx = case_when(
-      tx %in% c("control", "colony") ~ "control", 
-      .default = as.character(tx)
-    ),
-    new_week = case_when(
-      week <= 1 ~ 1, 
-      .default = week)
+    body_fat = dess_wt_1-xt_wt_1,
+    pct_bf = body_fat/dess_wt_1, 
     )
   
 ```
-```{r boxplots}
-bplot <- df |>
-  filter(is.na(comment)) |>
+```{r plots}
+
+scplot <- df |>
   ggplot(
-    aes(x=week, y = body_fat, group = week)
+    aes(x=sex_m_f, y = pct_bf, group = sex_m_f)
   ) +
-  geom_boxplot(aes(fill = sex)) +
+  geom_point()
   labs(
-    title = "body fat (mg)",
-    x = "treatment", y = "body fat (mg)",
+    title = "body fat proportion",
+    x = "treatment", y = "pct_body_fat",
+  ) 
+scplot
+
+bplot <- df |>
+  ggplot(
+    aes(x=treatment, y = pct_bf, group = sex_m_f)
   ) +
-  facet_wrap(~sex)
+  geom_boxplot(aes(fill = sex_m_f)) +
+  labs(
+    title = "body fat proportion",
+    x = "treatment", y = "pct_body_fat",
+  ) 
 bplot
 
-bplot2 <- df |>
-  filter(is.na(comment)) |>
-    group_by(new_week) |>
-  ggplot(
-    aes(x=as.factor(new_week), y = pct_bf, fill = sex)
-  ) +
-  geom_boxplot() +
-  labs(
-    title = "Tick Body Fat",
-    x = "week", y = "body fat proportion",
-  ) +
-  facet_wrap(~new_tx)
-bplot2
 ```
 
 ```{r stats}
-glm <- glm(body_fat ~ new_week + new_tx + sex, data = df, family = "gaussian")
-glm
-summary(glm)
+
+t <- t.test(pct_bf ~ sex_m_f, data = df)
+tstat <- t$statistic
+
+#the t statistic is the difference between means (0.321-0.197) divided by the variance (standard error; 0.00792)
+
+#generates T distribution
+x <- seq(-4, 4, length=100)     
+y <-  dt(x, df = 198)      
+
+stdt <- tibble(x,y)
+
+stdtplot <- stdt |> ggplot(aes(x = x, y = y)) +
+  geom_line() +
+  geom_vline(xintercept = 1, color = "darkblue")+
+  geom_vline(xintercept = -1, color = "darkblue")+
+  geom_vline(xintercept = 2, color = "lightblue")+
+  geom_vline(xintercept = -2, color = "lightblue")+
+  #includes t statistic from our test
+  geom_vline(xintercept = tstat, color = "orange") +
+   theme_bw()
+
+stdtplot
+
+
+#test for normality
+
+#demo
+# Create two independent sample datasets
+set.seed(123) # for reproducibility
+group1 <- rnorm(30, mean = 50, sd = 10)
+group2 <- rnorm(35, mean = 55, sd = 12)
+
+# Check normality for each group visually
+hist(group1, main = "Histogram of Group 1")
+hist(group2, main = "Histogram of Group 2")
+
+qqnorm(group1, main = "Q-Q Plot of Group 1")
+qqline(group1)
+
+qqnorm(group2, main = "Q-Q Plot of Group 2")
+qqline(group2)
+
+# Perform Shapiro-Wilk test for each group
+shapiro.test(group1)
+shapiro.test(group2)
+
+males <- df |>
+filter(sex_m_f == "M")
+
+females <- df |>
+filter(sex_m_f == "F")
+
+hist(males$pct_bf,main = "Histogram of pct_bf_males", plot = TRUE)
+hist(females$pct_bf,main = "Histogram of pct_bf_females", plot = TRUE)
+
+qqnorm(males$pct_bf, main = "Normal Q-Q Plot_Males",
+       xlab = "Theoretical Quantiles", ylab = "Sample Quantiles",
+       plot.it = TRUE, datax = FALSE)
+qqnorm(females$pct_bf, main = "Normal Q-Q Plot_Females",
+       xlab = "Theoretical Quantiles", ylab = "Sample Quantiles",
+       plot.it = TRUE, datax = FALSE)
+
+shapiro.test(males$pct_bf)
+shapiro.test(females$pct_bf)
+
+#nonparametric test
+wilcox.test(pct_bf~sex_m_f, data = df)
+  
+
 ```
 
 
