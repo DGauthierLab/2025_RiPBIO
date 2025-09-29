@@ -18,6 +18,7 @@ if (!require("pscl")) install.packages("pscl")
 if (!require("ggokabeito")) install.packages("ggokabeito")
 if (!require("remotes")) install.packages("remotes")
 if (!require("animation")) install.packages("animation")
+if (!require("cowsay")) install.packages("cowsay")
 #remotes::install_github("trobinj/trtools")
 
 #set working directory to present directory
@@ -34,6 +35,7 @@ library(MASS)
 library(pscl)
 library(ggokabeito)
 library(animation)
+library(cowsay)
 
 knitr::opts_chunk$set(echo = TRUE)
 ```
