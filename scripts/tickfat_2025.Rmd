@@ -29,6 +29,7 @@ if(!require(devtools)) install.packages("devtools")
 #set working directory to present directory
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
+
 #load libraries
 library(tidyverse)
 library(googlesheets4)
@@ -43,6 +44,7 @@ library(animation)
 library(cowsay)
 library(survminer)
 
+#for making reports
 knitr::opts_chunk$set(echo = TRUE)
 ```
 ```{r import}
@@ -57,11 +59,13 @@ df_raw <- suppressWarnings(
 df_raw <- as_tibble(df_raw)
 ```
 ```{r data wrangle}
+
+#extracts 2nd digit into treatment variable
 df_wrangled <- df_raw |> mutate(
   treatment = str_match(tick_id, "[A-Z]([0-9]).*")[,2]
 )
-```
 
+```
 ```{r data calculations}
 
 df_calc <- df_wrangled |>
@@ -81,40 +85,63 @@ df_calc <- df_wrangled |>
   
 ```
 ```{r plots}
-#survival
+
+#survival plot
 require("survival")
 fit <- survfit(Surv(time, dead) ~ treatment, data = df_calc)
 ggsurvplot(fit, data = df_calc)
 
+#converted to barchart from fit object
 tibble(time = fit$time, surv = fit$surv, treatment = c(0:5)) |>
   filter(time == 1) |>
-  ggplot(aes(y = surv)) +
-
-
-scplot <- df |>
   ggplot(
-    aes(x=sex_m_f, y = pct_bf, group = sex_m_f)
-  ) +
-  geom_point()
+    aes(x = treatment, y = surv)
+    ) +
+  geom_bar(
+    stat = "identity", 
+    position = "dodge"
+    ) +
   labs(
-    title = "body fat proportion",
-    x = "treatment", y = "pct_body_fat",
-  ) 
+    title = "Percent survival at 4 wk",
+    subtitle = "High to low humidity", 
+    x = "humidity treatment", 
+    y = "survival"
+  )
+
+#scatterplot of body fat proportion
+scplot <- df_calc |>
+  filter(dead == 0 & lost_legs == 0) |>
+  ggplot(
+    aes(x=treatment, y = pct_bf, color = sex_m_f)
+  ) +
+  geom_point(
+    position = position_dodge(width = 0.5), 
+    size = 1
+    ) +
+  labs(
+    title = "Body Fat Proportion",
+    x = "humidity treatment", 
+    y = "percent body fat",
+  ) +
+  theme_classic()
 scplot
 
-bplot <- df |>
+#barplot of body fat proportion
+bplot <- df_calc |>
+filter(dead == 0 & lost_legs == 0) |>
   ggplot(
-    aes(x=treatment, y = pct_bf, group = sex_m_f)
+    aes(x=treatment, y = pct_bf)
   ) +
   geom_boxplot(aes(fill = sex_m_f)) +
   labs(
-    title = "body fat proportion",
-    x = "treatment", y = "pct_body_fat",
-  ) 
+    title = "Body Fat Proportion",
+    x = "humidity treatment", 
+    y = "percent body fat",
+  ) +
+  theme_classic()
 bplot
 
 ```
-
 ```{r stats}
 
 t <- t.test(pct_bf ~ sex_m_f, data = df)
@@ -187,7 +214,7 @@ wilcox.test(pct_bf~sex_m_f, data = df)
   
 
 ```
-```{r}
+```{r Galton Box}
 quincunx = function(
   balls = 250, layers = 15, pch.layers = 2, pch.balls = 19,
   col.balls = sample(colors(), balls, TRUE), cex.balls = 2
