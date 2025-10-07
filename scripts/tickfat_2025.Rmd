@@ -19,6 +19,11 @@ if (!require("ggokabeito")) install.packages("ggokabeito")
 if (!require("remotes")) install.packages("remotes")
 if (!require("animation")) install.packages("animation")
 if (!require("cowsay")) install.packages("cowsay")
+if (!require("survminer")) install.packages("survminer")
+if(!require(devtools)) install.packages("devtools")
+
+#manually turn these off after install
+#devtools::install_github("kassambara/survminer", build_vignettes = FALSE)
 #remotes::install_github("trobinj/trtools")
 
 #set working directory to present directory
@@ -36,6 +41,7 @@ library(pscl)
 library(ggokabeito)
 library(animation)
 library(cowsay)
+library(survminer)
 
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -45,19 +51,45 @@ df_raw <- suppressWarnings(
     "https://docs.google.com/spreadsheets/d/1px-Ldt1EfCNNAWOFSrFH69v8FHLSb1imCDa9wuUgJCc/edit?usp=sharing", 
     sheet = "weigh_data"
     )
-)
+) |>
+  clean_names()
 
 df_raw <- as_tibble(df_raw)
 ```
+```{r data wrangle}
+df_wrangled <- df_raw |> mutate(
+  treatment = str_match(tick_id, "[A-Z]([0-9]).*")[,2]
+)
+```
+
 ```{r data calculations}
-df <- df_raw |>
+
+df_calc <- df_wrangled |>
+  rowwise() |>
   mutate(
-    body_fat = dess_wt_1-xt_wt_1,
-    pct_bf = body_fat/dess_wt_1, 
+    dess_wt_mean = mean(c_across(starts_with("dess_wt")), na.rm = TRUE), 
+    dess_wt_sd = sd(c_across(starts_with("dess_wt")), na.rm = TRUE), .after = dess_wt_4
+  ) |>
+   mutate(
+    xt_wt_mean = mean(c_across(starts_with("xt_wt")), na.rm = TRUE), 
+    xt_wt_sd = sd(c_across(starts_with("xt_wt")), na.rm = TRUE), .after = xt_wt_3
+  ) |>
+  mutate(
+    body_fat_raw = dess_wt_mean-xt_wt_mean,
+    pct_bf = body_fat_raw/dess_wt_mean, 
     )
   
 ```
 ```{r plots}
+#survival
+require("survival")
+fit <- survfit(Surv(time, dead) ~ treatment, data = df_calc)
+ggsurvplot(fit, data = df_calc)
+
+tibble(time = fit$time, surv = fit$surv, treatment = c(0:5)) |>
+  filter(time == 1) |>
+  ggplot(aes(y = surv)) +
+
 
 scplot <- df |>
   ggplot(
