@@ -142,7 +142,13 @@ filter(dead == 0 & lost_legs == 0) |>
 bplot
 
 ```
-```{r stats}
+
+```{r tickfat stats}
+aov.tick <- aov(pct_bf ~ treatment+sex_m_f, data = df_calc)
+summary(aov.tick)
+```
+
+```{r stats demos}
 
 t <- t.test(pct_bf ~ sex_m_f, data = df)
 tstat <- t$statistic
@@ -212,6 +218,30 @@ shapiro.test(females$pct_bf)
 #nonparametric test
 wilcox.test(pct_bf~sex_m_f, data = df)
   
+#ANOVA
+#generate three populations
+p1 <- rnorm(25, 25, 3)
+p2 <- rnorm(25, 40, 6)
+p3 <- rnorm(25, 15, 6)
+
+df <- tibble(p1, p2, p3) |>
+ pivot_longer(everything(), names_to = "pop")
+df
+
+df_calc <- df |>
+  mutate(
+    ss = (value-25)^2
+  )
+
+df_calc |> 
+  group_by(pop) |>
+  summarise(sst = mean(ss))
+
+lm(value ~ pop, data = df)
+
+df_anova <- aov(value ~ pop, data = df)
+summary(df_anova)
+
 
 ```
 ```{r Galton Box}
