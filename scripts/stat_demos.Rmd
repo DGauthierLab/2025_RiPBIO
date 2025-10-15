@@ -1,0 +1,282 @@
+---
+title: "stats_demos"
+output: html_document
+date: "2025-10-08"
+---
+
+```{r setup, include=FALSE}
+
+if (!require("tidyverse")) install.packages("tidyverse")
+if (!require("googlesheets4")) install.packages("googlesheets4")
+if (!require("janitor")) install.packages("janitor")
+if (!require("lubridate")) install.packages("lubridate")
+if (!require("readxl")) install.packages("readxl")
+if (!require("MuMIn")) install.packages("MuMIn")
+if (!require("MASS")) install.packages("MASS")
+if (!require("pwr")) install.packages("pwr")
+if (!require("ggpubr")) install.packages("ggpubr")
+if (!require("granova")) install.packages("granova")
+if (!require("animation")) install.packages("animation")
+
+library(tidyverse)
+library(googlesheets4)
+library(janitor)
+library(lubridate)
+library(readxl)
+library(MuMIn)
+library(MASS)
+library(pwr)
+library(ggpubr)
+library(granova)
+library(animation)
+
+#set working directory to present directory
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+getwd()
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r The Lady Tasting Tea}
+
+# Create vector of 0-4 sucesses
+x_dhyper <- seq(0, 4, by = 1)
+
+# Apply dhyper function
+# m = number of "successes" (milk-first)
+# n = number of "failures" (tea-first)
+# k = number of "draws" (choice of teacups prepared milk-first)
+
+y_dhyper <- dhyper(x_dhyper, m = 4, n = 4, k = 4)   
+
+# Make a dataframe
+hg_df <- tibble(x_dhyper,y_dhyper)
+hg_df
+
+## Plot dhyper values
+
+# basic plot
+hypergeometric <- hg_df |>
+  ggplot(aes(x = x_dhyper, y = y_dhyper)
+         ) +
+           geom_point()
+hypergeometric
+
+# barplot
+hypergeometric <- hg_df |>
+  ggplot(aes(x = x_dhyper, y = y_dhyper)
+  ) +
+  geom_bar(stat = "identity")
+hypergeometric
+
+#better barplot
+hypergeometric <- hg_df |>
+  ggplot(aes(x = x_dhyper, y = y_dhyper)
+  ) +
+  geom_bar(stat = "identity") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "red") +
+  labs(
+    title = "Hypergeometric Distribution of 4 trials",
+    subtitle = "Dashed line indicates 0.05 probability level"
+  ) +
+  xlab("Successes") +
+  ylab("Probability") +
+  theme_bw()
+hypergeometric
+```
+```{r Normal distribution and tests for two means}
+#Create a sequence of 100 equally spaced numbers between -4 and 4
+x <- seq(-4, 4, length=100)
+
+#create a vector of values that shows the height of the probability distribution
+#for each value in x
+y <- dnorm(x, mean = 0, sd = 1)
+
+#plot x and y
+
+norm_df <- tibble(x,y)
+
+norm_dist <- norm_df |>
+  ggplot(
+    aes(x=x, y=y)
+  ) +
+  geom_line() +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "red") +
+  scale_x_continuous(name = "",
+                     breaks = c(-3, -2, -1, 0, 1, 2, 3), 
+                     labels = paste0(seq(-3,3,1), "\u03c3")
+                     ) +
+  theme_bw()
+norm_dist
+
+#generate a tibble of normally distributed values (2 populations)
+pop1=rnorm(100,18,1)
+pop2=rnorm(100,22,2)
+
+
+df<- cbind(pop1,pop2)
+View(df)
+df <- as_tibble(df)
+
+#df isn't tidy
+df <- as_tibble(df) %>% 
+  pivot_longer(
+    everything(),
+    names_to = "population",
+    values_to = "weight_mg"
+  ) %>%
+  mutate(pop.f = as.factor(population)) %>%
+  mutate(pop.f=case_match(pop.f, "pop1" ~ "1", "pop2" ~ "2")) %>%
+  mutate(pop.f=as.numeric(pop.f)) %>%
+  arrange(population)
+
+pop.f <- as.factor(df$population)
+case_match(pop.f, "pop1" ~ "1", "pop2" ~ "2")
+
+#make scatterplot, boxplot
+plot2 <- df %>% 
+  #filter(population=="pop1" | population =="pop2") %>%
+  ggplot(aes(x=population,
+             y=weight_mg)) +
+  geom_point(size = 3) 
+plot2
+
+plot3 <- df %>% 
+  ggplot(aes(x=population,
+             y=weight_mg)) +
+  geom_boxplot()
+plot3
+
+#T-test and T-statistic for pop1,pop2
+
+ttest <- t.test(pop1,pop2)
+ttest
+tstat <- ttest$statistic
+tstat
+
+#power calculation
+pwr.t.test(100000,0.1,0.05)
+
+####t-distribution graphic####
+#base R way
+plot(function(x) dt(x, df = 198), -4, 4, ylim = c(0, 0.7),
+     main = "t-distribution", yaxs = "i", xlab= "stdev")
+abline(v=1, col="darkgreen")
+abline(v=-1, col="darkgreen")
+abline(v=-2, col="green")
+abline(v=2,col="green", )
+       abline(v=tstat, col="red",lty = 4)
+
+#tidyverse way
+#adding in .pdf generation
+
+pdf(file = "../output/tdist.pdf", width = 6, height = 4)
+x <- seq(-4, 4, length=100)     
+y <-  dt(x, df = 198)      
+
+stdt <- tibble(x,y)
+
+stdtplot <- stdt |> ggplot(aes(x = x, y = y)) +
+  geom_line() +
+  geom_vline(xintercept = 1, color = "darkblue")+
+  geom_vline(xintercept = -1, color = "darkblue")+
+  geom_vline(xintercept = 2, color = "lightblue")+
+  geom_vline(xintercept = -2, color = "lightblue")+
+  geom_vline(xintercept = tstat, color = "orange") +
+   theme_bw()
+stdtplot
+dev.off()
+
+pdf(file = "../output/comboplot.pdf", width = 8, height = 4)
+ggarrange(norm_dist, stdtplot)
+dev.off()
+
+#test for normality
+
+#demo
+
+# Check normality for each group visually
+hist(pop1, main = "Histogram of Group 1")
+hist(pop2, main = "Histogram of Group 2")
+
+qqnorm(pop1, main = "Q-Q Plot of Group 1")
+qqline(pop1)
+
+qqnorm(pop2, main = "Q-Q Plot of Group 2")
+qqline(pop2)
+
+# Perform Shapiro-Wilk test for each group
+shapiro.test(pop1)
+shapiro.test(pop2)
+
+#nonparametric test
+wilcox.test(weight_mg~population, data = df)
+
+```
+```{r ANOVA}
+#1-way from granova package
+
+#2 groups
+data(arousal)
+#Drug A
+granova.1w(arousal[,1:2], h.rng = 1.6, v.rng = 0.5, top.dot = .35)
+
+#3 groups
+data(anorexia, package="MASS")
+wt.gain <- anorexia[, 3] - anorexia[, 2]
+granova.1w(wt.gain, group = anorexia[, 1], size.line = -3, res = TRUE)
+
+a1 <- aov(wt.gain ~ anorexia[ ,1])
+summary.aov(a1)
+a1$coefficients
+
+```
+```{r Galton Box}
+balls = 250
+layers = 15
+ani.options(nmax = balls+layers-2)
+
+quincunx = function(
+  pch.layers = 2, pch.balls = 19,
+  col.balls = sample(colors(), balls, TRUE), cex.balls = 2
+) {
+  op = par(mar = c(1, 0.1, 0.1, 0.1), mfrow = c(2, 1)); on.exit(par(op))
+  if (ani.options('nmax') != (balls + layers - 2))
+    warning("It's strongly recommended that ani.options(nmax = balls + layers -2)")
+  nmax = max(balls + layers - 2, ani.options('nmax'))
+  layerx = layery = NULL
+  for (i in 1:layers) {
+    layerx = c(layerx, seq(0.5 * (i + 1), layers - 0.5 * (i - 1), 1))
+    layery = c(layery, rep(i, layers - i + 1))
+  }
+  ballx = bally = matrix(nrow = balls, ncol = nmax)
+  finalx = numeric(balls)
+  for (i in 1:balls) {
+    ballx[i, i] = (1 + layers)/2
+    if (layers > 2) {
+      tmp = rbinom(layers - 2, 1, 0.5) * 2 - 1
+      ballx[i, i + 1:(layers - 2)] = cumsum(tmp) * 0.5 + (1 + layers)/2
+    }
+    bally[i, (i - 1) + 1:(layers - 1)] = (layers - 1):1
+    finalx[i] = ballx[i, i + layers - 2]
+  }
+  rgx = c(1, layers)
+  rgy = c(0, max(table(finalx)))
+  for (i in 1:ani.options('nmax')) {
+    dev.hold()
+    plot(1:layers, type = 'n', ann = FALSE, axes = FALSE)
+    points(layerx, layery, pch = pch.layers)
+    points(ballx[, i], bally[, i], pch = pch.balls, col = col.balls, cex = cex.balls)
+    par(bty = 'u')
+    if (i < layers - 1) plot.new() else {
+      hist(finalx[1:(i - layers + 2)], breaks = 1:layers, xlim = rgx, ylim = rgy,
+           main = '', xlab = '', ylab = '', ann = FALSE, axes = FALSE)
+    }
+    ani.pause()
+  }
+  invisible(c(table(finalx)))
+}
+quincunx()
+```
+
+
+
