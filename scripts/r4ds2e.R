@@ -654,13 +654,33 @@ ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
 
 penguins |> 
   ggplot(aes(x = flipper_length_mm, y = body_mass_g)) + 
-  geom_point()
+  geom_point() 
 
 ##Section 1.4
 
 #categorical variable and a new geom
+
 ggplot(penguins, aes(x = species)) +
   geom_bar()
+
+ggplot(penguins, aes(x = species)) +
+  geom_bar(stat = "count")
+
+ggplot(penguins, aes(x = species, y=bill_depth_mm)) +
+  geom_bar(stat = "identity")
+
+ggplot(penguins, aes(x = species, y=bill_depth_mm)) +
+  geom_bar(stat = "summary", fun = mean)
+
+ggplot(penguins, aes(x = species, y=bill_depth_mm)) +
+  geom_bar(stat = "summary", fun = mean) +
+  stat_summary(fun.data = "mean_se", geom = "errorbar", width = 0.5)
+
+ggplot(penguins, aes(x = species, y=bill_depth_mm)) +
+  geom_bar(stat = "summary", fun = mean) +
+  geom_errorbar(stat = "summary", fun.data = mean_sdl, width = 0.5)
+
+#how do we know if the errorbars are correct?
 
 #reordered factors
 ggplot(penguins, aes(x = fct_infreq(species))) +
@@ -668,7 +688,8 @@ ggplot(penguins, aes(x = fct_infreq(species))) +
 
 #numerical variable and geom_histogram
 ggplot(penguins, aes(x = body_mass_g)) +
-  geom_histogram(binwidth = 200)
+  geom_histogram(binwidth = 200
+                 )
 
 ggplot(penguins, aes(x = body_mass_g)) +
   geom_histogram(binwidth = 20)
@@ -695,7 +716,7 @@ ggplot(penguins, aes(x = body_mass_g, color = species)) +
 #mapping variable species to both color and fill aesthetics
 #setting fill aesthetic to a value (0.5)
 ggplot(penguins, aes(x = body_mass_g, color = species, fill = species)) +
-  geom_density(alpha = .5)
+  geom_density(alpha = .8)
 
 #stacked barplot
 ggplot(penguins, aes(x = island)) +
@@ -707,6 +728,8 @@ ggplot(penguins, aes(x = island, fill = species)) +
 #using position argument to change behavior of stacked barplot
 ggplot(penguins, aes(x = island, fill = species)) +
   geom_bar(position = "dodge")
+#put in code for single-width bars
+
 
 #getting complicated.  Three or more variables
 #basic plot
@@ -718,7 +741,7 @@ ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
 #cleaner way to do this with faceting
 ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
   geom_point(aes(color = species, shape = species)) +
-  facet_grid(species ~ island)
+  facet_grid(~ species)
 
 
 ####Challenge 7####

@@ -89,11 +89,17 @@ df_calc <- df_wrangled |>
 #survival plot
 require("survival")
 fit <- survfit(Surv(time, dead) ~ treatment, data = df_calc)
-ggsurvplot(fit, data = df_calc)
+ggsurvplot(fit, 
+           data = df_calc, 
+           fun = "pct", 
+           pval = TRUE,
+           xlab = "month",
+           break.x.by = 1
+           )
 
 #converted to barchart from fit object
-tibble(time = fit$time, surv = fit$surv, treatment = c(0:5)) |>
-  filter(time == 1) |>
+tibble(time = fit$time, surv = fit$surv, treatment = c(1:5)) |>
+  filter(time == 2) |>
   ggplot(
     aes(x = treatment, y = surv)
     ) +
@@ -126,9 +132,9 @@ scplot <- df_calc |>
   theme_classic()
 scplot
 
-#barplot of body fat proportion
+#boxplot of body fat proportion
 bplot <- df_calc |>
-filter(dead == 0 & lost_legs == 0) |>
+filter(dead == 0) |>
   ggplot(
     aes(x=treatment, y = pct_bf)
   ) +
@@ -138,7 +144,8 @@ filter(dead == 0 & lost_legs == 0) |>
     x = "humidity treatment", 
     y = "percent body fat",
   ) +
-  theme_classic()
+  theme_classic() + 
+  facet_wrap(~time)
 bplot
 
 ```
