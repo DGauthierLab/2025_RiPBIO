@@ -233,7 +233,7 @@ flights <- flights |>
 
 # Flights that departed on January 1
 flights |> 
-  filter(month == 1 & month == 1)
+  filter(month == 1 & day == 1)
 
 # Flights that departed in January or February
 df <- flights |> 
@@ -244,7 +244,7 @@ flights |>
   filter(dep_delay > 120) |>
   filter(month == 1 & day == 1)
 
-# A shorter way to select flights that departed in January or February
+# A shorter way to select flights that departed in January through October
 flights |> 
   filter(month %in% c(1:10))
 
@@ -296,6 +296,13 @@ new_flights <- flights |>
     .after = day
     )
 
+df <- flights |>
+  mutate(
+    airtime_hr = air_time/60, 
+    .after = air_time
+  ) |>
+  mutate(airtime_hr = round(airtime_hr, 2))
+
 View(new_flights)
 
 flights |> 
@@ -322,7 +329,11 @@ flights |>
 
 #select: filters by column instead of row
 flights |> 
-  select(year, month, day)
+  dplyr::select(year, month, day)
+
+df <- df |>
+  dplyr::select(-air_time
+                )
 
 flights |> 
   select(year:flight)
