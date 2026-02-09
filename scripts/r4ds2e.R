@@ -86,8 +86,6 @@ pi rounded <- round(3.1415, digits = 2)
 pi_rounded <- round(3.1415, digits = 2)
 #
 
-####Challenge 1####
-#Start a new script in your personal branch.  It should include a setup block and a code block.  Make it do something in the code block.  
 ####Section 7: Data import####
 #note the path here.  your working directory should be scripts, so your data is up one (..), then down one to data
 #The (..) convention means "up one directory" and is a relative path
@@ -119,9 +117,6 @@ penguins_Dream <- read_excel("../data/penguins.xlsx",
                                            "numeric", "text", "numeric"))
 View(penguins_Dream)
 
-####Challenge 2####
-#Working within your own branch, place copies of your own data files in the /data folder.  
-#Add a code block that imports these data files into the Rstudio environment.
 ####Section 19: Joins####
 
 #data frames for joining
@@ -224,12 +219,6 @@ penguins_Torgerson <- read_excel("../data/penguins.xlsx",
                                  na = "NA") #this has been added
 View(penguins_Torgerson)
 ####
-
-####Challenge 3####
-#Using your imported data and your working script, perform some sort of join that merges dataframes.  
-#If you only have a single dataframe, practice by splitting it into two or more dfs and re-merging.  
-
-
 
 ####Section 3: Data Transformation####
 
@@ -405,9 +394,6 @@ daily |>
   summarize(n = n())
 
 
-####Challenge 4####
-#using your working script, perform a data transformation and summary.  You should use mutate(), group_by(), and summarize() functions.
-#once you have this working, make it a single piped command.
 ####Section 12: Summaries and Conditionals####
 
 #any() behaves as | "or" and returns TRUE if any values of x match conditions
@@ -505,8 +491,6 @@ flights |>
 
 
 
-####Challenge 5####
-#use case_when() and mutate() together to create a summary of your dataframe
 ####Section 5: Data tidying and pivoting####
 
 #table 1 is tidy
@@ -564,8 +548,6 @@ df |>
     values_from = value
   )
 
-####Challenge 6####
-#perform pivot_wide() and pivot_long() tranformations of your dataset as necessary to make it completely tidy
 ####Section 1: Data Visualization with ggplot2####
 
 #different ways to visualize data set
@@ -746,8 +728,6 @@ ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
   facet_grid(~ species)
 
 
-####Challenge 7####
-#Using your tidied data, create a beautiful plot showing the relationship between a dependent (y) and independent (x) variable, and mapping at least one additional variable.  
 ####Section 15: Regular Expressions####
 
 #literal matches
@@ -880,7 +860,4 @@ words$word |>
 
 ##give me a challenge...
 
-
-####Challenge 8####
-#Find all words in words$word that have three sets of double letters, e.g. bOOKKEEper or coMMiTTEE
 
