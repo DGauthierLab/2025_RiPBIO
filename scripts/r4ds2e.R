@@ -364,7 +364,7 @@ flights |>
   relocate(starts_with("arr"), .before = dep_time)
 
 ##Section 3.5: group_by() and summarize()
-#something
+
 flights |> 
   group_by(month)
 
