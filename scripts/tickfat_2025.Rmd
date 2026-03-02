@@ -44,4 +44,8 @@ df_raw <- suppressWarnings(
 df_raw <- as_tibble(df_raw)
 ```
 
+```{r data wrangle}
+df_wrangle <- df_raw |>
+  mutate(mean_dess = )
+```
 
