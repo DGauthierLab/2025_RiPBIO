@@ -31,7 +31,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 ```{r import}
 df_raw <- 
-  read_excel("~/Github/2025_RiPBIO/data/tickfat_master.xlsx", 
+  read_excel("../data/tickfat_master.xlsx", 
     sheet = "weigh_data") 
 
 
