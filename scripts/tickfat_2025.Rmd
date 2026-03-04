@@ -65,3 +65,17 @@ df_wrangled <- df_raw |>
     )
   
 ```
+```{r plots}
+df_wrangled |>
+  filter(!is.na(sex_m_f)) |>
+  filter(pct_bf >= 0) |>
+  ggplot(aes(y = pct_bf*100, 
+             x = sex_m_f)
+         ) +
+  geom_jitter(width = 0.1) +
+  labs(title = "Body fat percentage vs. sex",
+       y = "Pct body fat",
+       x = "Sex")
+
+```
+
