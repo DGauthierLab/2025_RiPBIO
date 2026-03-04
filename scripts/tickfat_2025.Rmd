@@ -62,7 +62,11 @@ df_wrangled <- df_raw |>
   mutate(
     body_fat_raw = dess_wt_mean-xt_wt_mean,
     pct_bf = body_fat_raw/dess_wt_mean, 
-    )
+    ) |>
+  mutate(
+  treatment = str_match(tick_id, "[A-Z]([0-9]).*")[,2],
+  .after = tick_id
+)
   
 ```
 ```{r plots}
