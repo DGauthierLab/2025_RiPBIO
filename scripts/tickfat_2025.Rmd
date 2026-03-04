@@ -37,6 +37,14 @@ df_raw <-
 
 df_raw <- as_tibble(df_raw)
 ```
+```{r google import}
+df_raw <- suppressWarnings(
+  read_sheet(
+    "https://docs.google.com/spreadsheets/d/10bdLgXpviS8Z4QTISbPmXtB9WXn0-Dc_dnBluMmYFmI/edit?usp=sharing", 
+    sheet = "weigh_data"
+    )
+) |> clean_names()
+```
 ```{r data wrangle}
 
 df_wrangled <- df_raw |>
