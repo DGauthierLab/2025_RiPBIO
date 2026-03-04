@@ -12,6 +12,15 @@ if (!require("googlesheets4")) install.packages("googlesheets4")
 if (!require("janitor")) install.packages("janitor")
 if (!require("lubridate")) install.packages("lubridate")
 if (!require("readxl")) install.packages("readxl")
+if (!require("MuMIn")) install.packages("MuMIn")
+if (!require("MASS")) install.packages("MASS")
+if (!require("pscl")) install.packages("pscl")
+if (!require("ggokabeito")) install.packages("ggokabeito")
+if (!require("remotes")) install.packages("remotes")
+if (!require("animation")) install.packages("animation")
+if (!require("cowsay")) install.packages("cowsay")
+if (!require("survminer")) install.packages("survminer")
+if(!require(devtools)) install.packages("devtools")
 
 #manually turn these off after install
 #devtools::install_github("kassambara/survminer", build_vignettes = FALSE)
@@ -23,19 +32,26 @@ getwd()
 
 #load libraries
 library(tidyverse)
+library(ggplot2)
 library(googlesheets4)
 library(janitor)
 library(lubridate)
 library(readxl)
-
+library(MuMIn)
+library(MASS)
+library(pscl)
+library(ggokabeito)
+library(animation)
+library(cowsay)
+library(survminer)
 
 #for making reports
 knitr::opts_chunk$set(echo = TRUE)
 ```
-```{r import data}
+```{r import}
 df_raw <- suppressWarnings(
   read_sheet(
-    "https://docs.google.com/spreadsheets/d/1px-Ldt1EfCNNAWOFSrFH69v8FHLSb1imCDa9wuUgJCc/edit?usp=sharing", 
+    "https://docs.google.com/spreadsheets/d/10bdLgXpviS8Z4QTISbPmXtB9WXn0-Dc_dnBluMmYFmI/edit?usp=sharing", 
     sheet = "weigh_data"
     )
 ) |>
@@ -43,9 +59,126 @@ df_raw <- suppressWarnings(
 
 df_raw <- as_tibble(df_raw)
 ```
-
 ```{r data wrangle}
-df_wrangle <- df_raw |>
-  mutate(mean_dess = )
+
+df_wrangled <- df_raw |>
+  rowwise() |>
+  mutate(
+    dess_wt_mean = mean(c_across(starts_with("dess_wt")), na.rm = TRUE), 
+    dess_wt_sd = sd(c_across(starts_with("dess_wt")), na.rm = TRUE), .after = dess_wt_4
+  ) |>
+   mutate(
+    xt_wt_mean = mean(c_across(starts_with("xt_wt")), na.rm = TRUE), 
+    xt_wt_sd = sd(c_across(starts_with("xt_wt")), na.rm = TRUE), .after = xt_wt_3
+  ) |>
+  mutate(
+    body_fat_raw = dess_wt_mean-xt_wt_mean,
+    pct_bf = body_fat_raw/dess_wt_mean, 
+    )
+  
 ```
+```{r plots}
+
+#survival plot
+require("survival")
+
+df_surv <- df_calc |>
+  dplyr::filter(is.na(omit))
+
+fit <- surv_fit(Surv(time, dead) ~ treatment, data = df_surv)
+ggsurvplot(fit, 
+           data = df_surv, 
+           fun = "pct", 
+           pval = TRUE,
+           xlab = "month",
+           break.x.by = 1
+           )
+
+#converted to barchart from fit object
+tibble(time = fit$time, surv = fit$surv, treatment = c(0,1,1,1,2,2,2,3,3,3,4,4,4,5,5,5)) |>
+  ggplot(
+    aes(x = treatment, y = surv, group = time, fill = time)
+    ) +
+  geom_bar(
+    stat = "identity", 
+    position = "dodge"
+    ) +
+
+  labs(
+    title = "Percent survival at 4 wk",
+    subtitle = "High to low humidity", 
+    x = "humidity treatment", 
+    y = "survival"
+  )
+
+#scatterplot of body fat proportion over time by treatment
+scplot <- df_calc |>
+  filter(dead == 0) |>
+  ggplot(
+    aes(x=time, y = pct_bf, color = sex_m_f)
+  ) +
+  geom_point(
+    position = position_dodge(width = 0.5), 
+    size = 1
+    ) +
+  labs(
+    title = "Body Fat Proportion",
+    x = "humidity treatment", 
+    y = "percent body fat",
+  ) +
+  theme_classic() +
+  facet_wrap(~treatment, nrow = 1)
+scplot
+
+#boxplot of body fat proportion
+bplot <- df_calc |>
+filter(dead == 0,
+       pct_bf > 0) |>
+  ggplot(
+    aes(x=as.factor(time), y = pct_bf)
+  ) +
+  geom_boxplot(aes(fill = sex_m_f)) +
+  theme_classic() + 
+  facet_wrap (~treatment, nrow = 1)
+bplot
+
+```
+
+```{r tickfat stats}
+aov.tick <- aov(pct_bf ~ treatment+sex_m_f, data = df_calc)
+summary(aov.tick)
+```
+```{r thermohygro}
+th_raw <- suppressWarnings(
+  read_sheet(
+    "https://docs.google.com/spreadsheets/d/1px-Ldt1EfCNNAWOFSrFH69v8FHLSb1imCDa9wuUgJCc/edit?usp=sharing", 
+    sheet = "thermo_hygro_data"
+    )
+) |>
+  clean_names()
+
+th_raw <- as_tibble(th_raw)
+
+th_summ <- th_raw |>
+  group_by(date, treatment) |>
+  summarize(mean_temp = round(mean(temp_f),0),
+            mean_rh = round(mean(rh_pct),0)
+  )
+
+thplot <- th_summ |> 
+  ggplot(aes(x = date, y = mean_temp)
+         ) +
+  geom_point()
+
+thplot
+
+thplot2 <- th_summ |> 
+  ggplot(aes(x = date, y = mean_rh, color = treatment)
+         ) +
+  geom_point() +
+  geom_smooth(aes(group = treatment))
+
+thplot2
+```
+
 
