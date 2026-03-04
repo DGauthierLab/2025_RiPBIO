@@ -12,19 +12,6 @@ if (!require("googlesheets4")) install.packages("googlesheets4")
 if (!require("janitor")) install.packages("janitor")
 if (!require("lubridate")) install.packages("lubridate")
 if (!require("readxl")) install.packages("readxl")
-if (!require("MuMIn")) install.packages("MuMIn")
-if (!require("MASS")) install.packages("MASS")
-if (!require("pscl")) install.packages("pscl")
-if (!require("ggokabeito")) install.packages("ggokabeito")
-if (!require("remotes")) install.packages("remotes")
-if (!require("animation")) install.packages("animation")
-if (!require("cowsay")) install.packages("cowsay")
-if (!require("survminer")) install.packages("survminer")
-if(!require(devtools)) install.packages("devtools")
-
-#manually turn these off after install
-#devtools::install_github("kassambara/survminer", build_vignettes = FALSE)
-#remotes::install_github("trobinj/trtools")
 
 #set working directory to present directory
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -37,13 +24,7 @@ library(googlesheets4)
 library(janitor)
 library(lubridate)
 library(readxl)
-library(MuMIn)
-library(MASS)
-library(pscl)
-library(ggokabeito)
-library(animation)
-library(cowsay)
-library(survminer)
+
 
 #for making reports
 knitr::opts_chunk$set(echo = TRUE)
