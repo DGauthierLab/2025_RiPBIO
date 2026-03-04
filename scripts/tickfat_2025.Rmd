@@ -32,11 +32,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r import}
 df_raw <- 
   read_excel("../data/tickfat_master.xlsx", 
-    sheet = "weigh_data") 
-
-
-#|>
- # clean_names()
+    sheet = "weigh_data") |>
+ clean_names()
 
 df_raw <- as_tibble(df_raw)
 ```
