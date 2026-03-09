@@ -77,8 +77,7 @@ fatplot <- df_wrangled |>
   filter(!is.na(sex_m_f)) |>
   filter(pct_bf >= 0) |>
   ggplot(aes(y = pct_bf*100, 
-             x = time,
-             color = sex_m_f)) +
+             x = as.factor(time))) +
   labs(title = "Body fat percentage vs. sex",
        y = "Pct body fat",
        x = "Time")
@@ -89,8 +88,8 @@ fatplot_scatter <- fatplot +
 fatplot_scatter
 
 fatplot_box <- fatplot +
-  geom_boxplot()+
-  facet_wrap(~treatment)
+  geom_boxplot(aes(fill = sex_m_f))+
+  facet_wrap(~treatment, nrow = 1)
 fatplot_box
 ```
 
