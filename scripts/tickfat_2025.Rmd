@@ -48,7 +48,9 @@ df_raw <- suppressWarnings(
 ```{r data wrangle}
 
 df_wrangled <- df_raw |>
+  #rowwise allows taking a mean across columns
   rowwise() |>
+  #c_across is necessary for taking a mean across columns
   mutate(
     dess_wt_mean = mean(c_across(starts_with("dess_wt")), na.rm = TRUE), 
     dess_wt_sd = sd(c_across(starts_with("dess_wt")), na.rm = TRUE), 
@@ -63,6 +65,7 @@ df_wrangled <- df_raw |>
     body_fat_raw = dess_wt_mean-xt_wt_mean,
     pct_bf = body_fat_raw/dess_wt_mean, 
     ) |>
+  #regex to pull first digit out of id column --> treatment
   mutate(
   treatment = str_match(tick_id, "[A-Z]([0-9]).*")[,2],
   .after = tick_id
@@ -74,12 +77,14 @@ df_wrangled |>
   filter(!is.na(sex_m_f)) |>
   filter(pct_bf >= 0) |>
   ggplot(aes(y = pct_bf*100, 
-             x = sex_m_f)
+             x = time,
+             color = sex_m_f)
          ) +
   geom_jitter(width = 0.1) +
   labs(title = "Body fat percentage vs. sex",
        y = "Pct body fat",
-       x = "Sex")
+       x = "Time") +
+  facet_wrap(~sex_m_f)
 
 ```
 
