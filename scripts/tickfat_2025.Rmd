@@ -74,6 +74,7 @@ df_wrangled <- df_raw |>
 ```
 ```{r plots}
 fatplot <- df_wrangled |>
+  filter(dead == 0) |>
   filter(!is.na(sex_m_f)) |>
   filter(pct_bf >= 0) |>
   ggplot(aes(y = pct_bf*100, 
@@ -92,4 +93,46 @@ fatplot_box <- fatplot +
   facet_wrap(~treatment, nrow = 1)
 fatplot_box
 ```
+```{r summary tables}
+summ <- df_wrangled |>
+  filter(dead == 0) |>
+  filter(!is.na(sex_m_f)) |>
+  filter(pct_bf >= 0) |>
+  group_by(treatment, sex_m_f,time) |>
+  summarize(
+    n=n()
+  )
+summ
 
+```
+
+
+```{r stats}
+#hypothesis:  Male and Female ticks have different mean body fat percentage
+
+fm_plot <- df_wrangled |>
+  filter(dead == 0) |>
+  filter(!is.na(sex_m_f)) |>
+  filter(pct_bf >= 0) |>
+  ggplot(aes(x=sex_m_f, y = pct_bf))+
+  geom_boxplot()
+
+df <- df_wrangled |>
+  filter(dead == 0) |>
+  filter(!is.na(sex_m_f)) |>
+  filter(pct_bf >= 0) |>
+  dplyr::select(sex_m_f, pct_bf)
+fm_plot
+
+ t.test(pct_bf ~ sex_m_f, data = df)
+
+#1-way ANOVA: 
+#hypothesis:  Male and Female ticks have different mean body fat percentage
+ 
+ 
+```
+
+
+
+ 
+ 
