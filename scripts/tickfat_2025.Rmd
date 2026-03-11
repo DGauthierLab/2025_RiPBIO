@@ -128,7 +128,8 @@ df_stat <- df_wrangled |>
   filter(!is.na(sex_m_f)) |>
   filter(pct_bf >= 0) 
 
- t.test(pct_bf ~ sex_m_f, data = df)
+ t.test(pct_bf ~ sex_m_f, data = as.data.frame(df_stat))
+ 
 
 #1-way ANOVA: 
 #hypothesis:  Male and Female ticks have different mean body fat percentage
