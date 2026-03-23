@@ -153,11 +153,6 @@ summary(aov.tick)
 aov.tick <- aov(pct_bf ~ time * sex_m_f, data = df_stat_1)
 summary(aov.tick)
 
-
-granova.1w(data = df_stat_1$pct_bf, group = df_stat_1$time,  h.rng = 1.6, v.rng = 0.5, top.dot = .35)
-
-#hypothesis: Mean body fat is different among humidity treatments at time 1
-
 #2-way ANOVA:
 #hypothesis: mean body fat percentage differs by sex or time
 #note interaction term here (sex * treatment)
