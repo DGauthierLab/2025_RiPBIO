@@ -109,8 +109,6 @@ summ <- df_wrangled |>
 summ
 
 ```
-
-
 ```{r stats}
 #hypothesis:  Male and Female ticks have different mean body fat percentage
 
