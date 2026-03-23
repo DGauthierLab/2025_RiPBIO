@@ -160,6 +160,27 @@ summary(aov.tick)
 aov.tick <- aov(pct_bf ~ sex_m_f * treatment, data = as.data.frame(df_stat))
 summary(aov.tick)
 
+#3-way ANOVA:
+#hypothesis: mean body fat percentage differs by sex or time or humidity
+
+aov.tick <- aov(pct_bf ~ sex_m_f + treatment + time, data = as.data.frame(df_stat))
+summary(aov.tick)
+
+#2-way ANOVA:
+#hypothesis: mean body fat percentage differs among treatments at time 1
+
+df_stat_2 <- df_stat |>
+  filter(time==1) |>
+  filter(treatment %in% c(1:5))
+
+aov.tick_txmf <- aov(pct_bf ~ treatment + sex_m_f, data = as.data.frame(df_stat_2))
+summary(aov.tick_txmf)
+AIC(aov.tick_txmf)
+
+aov.tick_txmf_i <- aov(pct_bf ~ treatment * sex_m_f, data = as.data.frame(df_stat_2))
+summary(aov.tick_txmf_i)
+AIC(aov.tick_txmf_i)
+
 ```
 
 
