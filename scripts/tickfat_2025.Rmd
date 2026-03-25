@@ -186,11 +186,11 @@ AIC(aov.tick_txmf_i)
 ```{r survival analysis}
 #vignette
 fit <- surv_fit(Surv(time, status) ~ rx,
-               data = colon
-               #group.by = "sex"
+               data = colon,
+               group.by = "sex"
 )
                
-ggsurvplot(fit, data = colon)    
+ggsurvplot(fit, data = colon, facet.by = "age")    
 
 surv_pvalue(fit)
 
@@ -243,6 +243,11 @@ tibble(time = fit3$time, surv = fit3$surv, treatment = c(1,1,1,2,2,2,3,3,3,4,4,4
 #multivariate analysis using Cox Proportional Hazards
 cfit3 <- coxph(Surv(time, dead) ~ treatment + sex_m_f, data = df_surv)
 cfit3
+extractAIC(cfit3)
+
+cfit4 <- coxph(Surv(time, dead) ~ treatment * sex_m_f, data = df_surv)
+cfit4
+extractAIC(cfit4)
 
 #check for proportional hazards
 
