@@ -13,8 +13,8 @@ if (!require("janitor")) install.packages("janitor")
 if (!require("lubridate")) install.packages("lubridate")
 if (!require("readxl")) install.packages("readxl")
 if (!require("granova")) install.packages("granova")
-if (!require("rgl")) install.packages("rgl")
-
+if (!require("survminer")) install.packages("survminer")
+if (!require("survival")) install.packages("survival")
 #set working directory to present directory
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
@@ -27,7 +27,8 @@ library(janitor)
 library(lubridate)
 library(readxl)
 library(granova)
-library(rgl)
+library(survminer)
+library(survival)
 
 
 #for making reports
@@ -182,7 +183,73 @@ summary(aov.tick_txmf_i)
 AIC(aov.tick_txmf_i)
 
 ```
+```{r survival analysis}
+#vignette
+fit <- surv_fit(Surv(time, status) ~ rx,
+               data = colon
+               #group.by = "sex"
+)
+               
+ggsurvplot(fit, data = colon)    
 
+surv_pvalue(fit)
+
+fit1 <- coxph(Surv(time, status) ~ rx + sex, data = colon)
+fit1
+extractAIC(fit1)
+
+fit2 <- coxph(Surv(time, status) ~ rx * sex, data = colon)
+fit2
+extractAIC(fit2)
+
+#create data frame with no NA an no Treatment 0
+df_surv <- df_wrangled |>
+  dplyr::filter(is.na(omit)) |>
+  dplyr::filter(treatment != 0)
+
+#fit Kaplan-Meyer curves
+fit1 <- surv_fit(Surv(time, dead) ~ treatment, data = df_surv)
+
+#plot survival
+ggsurvplot(fit1, 
+           data = df_surv, 
+           fun = "pct", 
+           pval = TRUE,
+           xlab = "month",
+           break.x.by = 1,
+           linetype = "treatment",
+           alpha = 0.5
+           )
+
+surv_pvalue(fit1)
+
+#converted to barchart from fit object
+tibble(time = fit$time, surv = fit$surv, treatment = c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5)) |>
+  ggplot(
+    aes(x = treatment, y = surv, group = time, fill = time)
+    ) +
+  geom_bar(
+    stat = "identity", 
+    position = "dodge"
+    ) +
+
+  labs(
+    title = "Percent survival at 4 wk",
+    subtitle = "High to low humidity", 
+    x = "humidity treatment", 
+    y = "survival"
+  )
+
+#multivariate analysis using Cox Proportional Hazards
+fit2 <- coxph(Surv(time, dead) ~ treatment + sex_m_f, data = df_surv)
+fit2
+
+#check for proportional hazards
+
+checkph <- cox.zph(fit2)
+checkph
+
+```
 
 
  
