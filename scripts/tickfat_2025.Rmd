@@ -194,13 +194,13 @@ ggsurvplot(fit, data = colon)
 
 surv_pvalue(fit)
 
-fit1 <- coxph(Surv(time, status) ~ rx + sex, data = colon)
-fit1
-extractAIC(fit1)
+cfit1 <- coxph(Surv(time, status) ~ rx + sex, data = colon)
+cfit1
+extractAIC(cfit1)
 
-fit2 <- coxph(Surv(time, status) ~ rx * sex, data = colon)
-fit2
-extractAIC(fit2)
+cfit2 <- coxph(Surv(time, status) ~ rx * sex, data = colon)
+cfit2
+extractAIC(cfit2)
 
 #create data frame with no NA an no Treatment 0
 df_surv <- df_wrangled |>
@@ -208,10 +208,10 @@ df_surv <- df_wrangled |>
   dplyr::filter(treatment != 0)
 
 #fit Kaplan-Meyer curves
-fit1 <- surv_fit(Surv(time, dead) ~ treatment, data = df_surv)
+fit3 <- surv_fit(Surv(time, dead) ~ treatment, data = df_surv)
 
 #plot survival
-ggsurvplot(fit1, 
+ggsurvplot(fit3, 
            data = df_surv, 
            fun = "pct", 
            pval = TRUE,
@@ -221,10 +221,10 @@ ggsurvplot(fit1,
            alpha = 0.5
            )
 
-surv_pvalue(fit1)
+surv_pvalue(fit3)
 
 #converted to barchart from fit object
-tibble(time = fit$time, surv = fit$surv, treatment = c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5)) |>
+tibble(time = fit3$time, surv = fit3$surv, treatment = c(1,1,1,2,2,2,3,3,3,4,4,4,5,5,5)) |>
   ggplot(
     aes(x = treatment, y = surv, group = time, fill = time)
     ) +
@@ -241,12 +241,12 @@ tibble(time = fit$time, surv = fit$surv, treatment = c(1,1,1,2,2,2,3,3,3,4,4,4,5
   )
 
 #multivariate analysis using Cox Proportional Hazards
-fit2 <- coxph(Surv(time, dead) ~ treatment + sex_m_f, data = df_surv)
-fit2
+cfit3 <- coxph(Surv(time, dead) ~ treatment + sex_m_f, data = df_surv)
+cfit3
 
 #check for proportional hazards
 
-checkph <- cox.zph(fit2)
+checkph <- cox.zph(cfit3)
 checkph
 
 ```
