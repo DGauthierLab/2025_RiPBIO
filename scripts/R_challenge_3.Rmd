@@ -1,0 +1,119 @@
+---
+title: "tickfat"
+output: html_document
+date: "2024-10-08"
+---
+
+```{r setup, include=FALSE}
+
+#install packages
+if (!require("tidyverse")) install.packages("tidyverse")
+if (!require("googlesheets4")) install.packages("googlesheets4")
+if (!require("janitor")) install.packages("janitor")
+if (!require("lubridate")) install.packages("lubridate")
+if (!require("readxl")) install.packages("readxl")
+if (!require("granova")) install.packages("granova")
+if (!require("survminer")) install.packages("survminer")
+if (!require("survival")) install.packages("survival")
+#set working directory to present directory
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+getwd()
+
+#load libraries
+library(tidyverse)
+library(ggplot2)
+library(googlesheets4)
+library(janitor)
+library(lubridate)
+library(readxl)
+library(granova)
+library(survminer)
+library(survival)
+
+
+#for making reports
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r code}
+#in the data folder of the repository, you will find a .csv file called heights.csv. Import heights.csv and convert it into a data frame. The variable ED represents years of education completed. Complete the following tasks:
+
+df <- read_csv("../data/heights.csv")
+View(df)
+#Round all values in the HEIGHT column to two decimal places.
+
+df2 <- df |>
+  mutate(height = round(height,2))
+View(df2)
+
+#Display the first few rows to confirm that your changes were successful.
+
+View(head(df2,2))
+
+#Using the cleaned dataset: Create a scatter plot of education (ED) versus earnings (EARN). Facet the plot by sex. Add a linear trendline to each panel.  Clearly label axes and include an informative title.
+
+plot1 <- df2 |>
+  ggplot(aes(y = ed, x = earn)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  facet_grid(~sex) +
+  labs(
+    title = "An Informative Title",
+    x = "Earnings ($)",
+    y = "Education (years)"
+  )
+
+
+ plot1
+#Using comment lines, answer this question: Based on this data, does the relationship between education and earnings appear to differ by sex?
+ 
+#Using the summarize() function: group heights.csv by sex. Calculate the following summary statistics for height:  mean, standard deviation,  sample size (n), and standard error of the mean height. Store the results in a new data frame.
+ 
+summ1 <- df2 |>
+  group_by(sex) |>
+  summarize(
+    mean = mean(height),
+    sd = sd (height), 
+    sample_size = n(),
+    sem = sd/sqrt(sample_size)
+  )
+summ1
+
+#Using ggplot2, create a plot showing mean height by sex. Add error bars representing ±1 standard error around the mean. Clearly label: x-axis, y-axis, and a title. The theme of the plot should be classic. 
+
+plot2 <- summ1 |>
+  ggplot(aes(y = mean,
+             x = sex)) +
+  geom_point() +
+  geom_errorbar(aes(
+    ymax = mean + sem, 
+    ymin = mean - sem), 
+    width = 0.25
+    ) +
+  labs(
+    title = "An Informative Title",
+    x = "Sex",
+    y = "Mean Height (cm)"
+  ) +
+  theme_classic()
+
+plot2
+
+plot3 <- summ1 |>
+  ggplot(aes(y = mean,
+             x = sex)) +
+  geom_errorbar(aes(
+    ymax = mean + sd,
+    ymin = mean  - sd), 
+    width = 0.25
+    ) +
+  geom_col(fill = "orange", width = 0.6) +
+  labs(
+    title = "An Informative Title",
+    x = "Sex",
+    y = "Mean Height (cm)"
+  ) +
+  theme_classic()
+
+plot3
+```
+

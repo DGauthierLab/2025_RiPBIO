@@ -51,6 +51,8 @@ df_raw <- suppressWarnings(
 ) |> clean_names()
 ```
 ```{r data wrangle}
+#remove bad data
+df_raw[61,15] = NA
 
 df_wrangled <- df_raw |>
   #rowwise allows taking a mean across columns
@@ -74,7 +76,9 @@ df_wrangled <- df_raw |>
   mutate(
   treatment = str_match(tick_id, "[A-Z]([0-9]).*")[,2],
   .after = tick_id
-)
+) |>
+  mutate(treatment = if_else(treatment == "0" & time == 0, "1", treatment))
+
   
 ```
 ```{r plots}
@@ -84,7 +88,7 @@ fatplot <- df_wrangled |>
   filter(pct_bf >= 0) |>
   ggplot(aes(y = pct_bf*100, 
              x = as.factor(time))) +
-  labs(title = "Body fat percentage vs. sex",
+  labs(#title = "Body fat percentage vs. sex",
        y = "Pct body fat",
        x = "Time")
       
@@ -94,9 +98,27 @@ fatplot_scatter <- fatplot +
 fatplot_scatter
 
 fatplot_box <- fatplot +
-  geom_boxplot(aes(fill = sex_m_f))+
-  facet_wrap(~treatment, nrow = 1)
+  geom_boxplot(aes(fill = sex_m_f)) +
+  facet_wrap(~treatment, 
+             nrow = 1,
+             labeller = labeller(treatment = c(
+               "1" = "RH 85%",
+               "2" = "RH 70%",
+               "3" = "RH 60%",
+               "4" = "RH 50%",
+               "5" = "RH 40%"
+             ))) +
+  scale_fill_viridis_d(option = "E", name = "sex", begin = 0.55, end = 0.95) +
+  theme_classic() +
+  theme(
+   strip.background = element_rect(fill = "#FFF2CC", color = "black", linewidth = 0.5),
+   strip.text = element_text(size = 12, face = "bold"), 
+   #strip.background = element_blank()
+   ) 
 fatplot_box
+
+
+
 ```
 ```{r summary tables}
 summ <- df_wrangled |>
