@@ -81,8 +81,8 @@ fatplot <- df_wrangled |>
   ggplot(aes(y = pct_bf*100, 
              x = as.factor(time))) +
   labs(#title = "Body fat percentage vs. sex",
-       y = "Pct body fat",
-       x = "Time")
+       y = "Body fat proportion (%)",
+       x = "Time (months)")
       
 fatplot_scatter <- fatplot +
   geom_jitter(width = 0.1, size = 0.5) +
@@ -225,6 +225,7 @@ df_surv <- df_wrangled |>
 fit3 <- surv_fit(Surv(time, dead) ~ treatment, data = df_surv)
 
 #plot survival
+
 ggsurvplot(fit3, 
            data = df_surv, 
            fun = "pct", 
